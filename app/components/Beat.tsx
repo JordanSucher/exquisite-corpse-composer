@@ -9,7 +9,6 @@ type BeatProps = {
     setMouseDown: (value: boolean) => void
     dragMode: boolean
     setDragMode: (value: boolean) => void
-    cols: number
     startingCol: number
     beat: number
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
@@ -17,7 +16,7 @@ type BeatProps = {
     synth: React.RefObject<Tone.Synth>
 }
 
-export default function Beat({notesPerBeat, bar, row, mouseDown, setMouseDown, dragMode, setDragMode, cols, startingCol, beat, setNotes, playbackIndex, synth}: BeatProps) {
+export default function Beat({notesPerBeat, bar, row, mouseDown, setMouseDown, dragMode, setDragMode, startingCol, beat, setNotes, playbackIndex, synth}: BeatProps) {
     return (
         <span className={`flex grow`}>
             {Array.from({length: notesPerBeat}, (_, i) => (

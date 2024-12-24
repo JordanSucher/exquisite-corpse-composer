@@ -9,10 +9,10 @@ import * as Tone from 'tone'
 
 export default function Sequencer() {
     const synth = useRef(new Tone.Synth().toDestination());
-    const [octaves, setOctaves] = useState(2);
-    const [bars, setBars] = useState(4);
-    const [beatsPerBar, setBeatsPerBar] = useState(4);
-    const [notesPerBeat, setNotesPerBeat] = useState(2);
+    const [octaves] = useState(2);
+    const [bars] = useState(4);
+    const [beatsPerBar] = useState(4);
+    const [notesPerBeat] = useState(2);
     const [mouseDown, setMouseDown] = useState(false)
     const [playing, setPlaying] = useState(false)
     const [playbackIndex, setPlaybackIndex] = useState(0)

@@ -51,7 +51,7 @@ export default function Cell({bar, row, edge, mouseDown, setMouseDown, dragMode,
                 return newNotes
             })
 
-            synth.current.triggerAttackRelease(note, '8n')
+            triggerNote()
         } else {
             setNotes((prevNotes) => {
                 const newNotes = [...prevNotes]

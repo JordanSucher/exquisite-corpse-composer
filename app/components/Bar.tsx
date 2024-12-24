@@ -11,14 +11,13 @@ type BarProps = {
     setMouseDown: (value: boolean) => void
     dragMode: boolean;
     setDragMode: (value: boolean) => void
-    cols: number
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
     synth: React.RefObject<Tone.Synth>
 };
 
 
-export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, cols, setNotes, playbackIndex, synth}: BarProps) {
+export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, setNotes, playbackIndex, synth}: BarProps) {
     const startingCol = bar*beatsPerBar*notesPerBeat
 
     return (
@@ -34,7 +33,6 @@ export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, set
                         setMouseDown={setMouseDown}
                         dragMode={dragMode}
                         setDragMode={setDragMode}
-                        cols={cols}
                         startingCol={startingCol}
                         setNotes={setNotes}
                         playbackIndex={playbackIndex}

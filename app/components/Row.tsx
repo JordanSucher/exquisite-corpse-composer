@@ -1,5 +1,5 @@
 import Bar from "./Bar";
-import React, { useEffect } from "react";
+import React from "react";
 import * as Tone from 'tone';
 
 type RowProps = {

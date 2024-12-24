@@ -1,5 +1,5 @@
 import Row from "./Row";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import * as Tone from 'tone'
 
 type TonalSequenceProps = {
