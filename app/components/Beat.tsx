@@ -1,3 +1,6 @@
+'use client'
+
+
 import Cell from "./Cell";
 import * as Tone from 'tone'
 

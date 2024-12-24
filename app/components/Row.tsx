@@ -1,3 +1,5 @@
+'use client'
+
 import Bar from "./Bar";
 import React from "react";
 import * as Tone from 'tone';

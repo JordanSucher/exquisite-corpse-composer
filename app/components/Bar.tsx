@@ -1,3 +1,5 @@
+'use client'
+
 import React from "react";
 import Beat from "./Beat";
 import * as Tone from 'tone'

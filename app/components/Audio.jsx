@@ -1,3 +1,5 @@
+'use client'
+
 import { Song, Track, Instrument, Effect } from 'reactronica';
 import { useState, useEffect } from 'react';
 import * as Tone from 'tone';

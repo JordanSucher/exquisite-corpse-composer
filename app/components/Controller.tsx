@@ -1,3 +1,6 @@
+'use client'
+
+
 import { Pause, Play } from "lucide-react";
 
 type ControllerProps = {

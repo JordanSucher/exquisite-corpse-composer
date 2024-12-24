@@ -1,3 +1,5 @@
+'use client'
+
 import Row from "./Row";
 import { useState } from "react";
 import * as Tone from 'tone'

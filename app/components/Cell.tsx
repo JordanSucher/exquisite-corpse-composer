@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from "react";
 import * as Tone from 'tone'
 
@@ -37,11 +39,11 @@ export default function Cell({bar, row, edge, mouseDown, setMouseDown, dragMode,
         }
     }
 
-    const triggerNote = () => {
-        synth.current.triggerAttackRelease(note, '8n')
-    }
-
+    
     useEffect(() => {
+        const triggerNote = () => {
+            synth.current.triggerAttackRelease(note, '8n')
+        }
         if (selected) {
             setNotes((prevNotes) => {
                 const newNotes = [...prevNotes]
