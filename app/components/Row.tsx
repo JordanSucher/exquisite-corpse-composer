@@ -18,7 +18,6 @@ type RowProps = {
 };
 
 export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, setNotes, playbackIndex, synth}: RowProps) {
-    const cols = bars*beatsPerBar*notesPerBeat
 
     return (
         <span className="flex w-screen grow">
@@ -33,7 +32,6 @@ export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, se
                         setMouseDown={setMouseDown}
                         dragMode={dragMode}
                         setDragMode={setDragMode}
-                        cols = {cols}
                         setNotes={setNotes}
                         playbackIndex={playbackIndex}
                         synth={synth}
