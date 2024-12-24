@@ -15,7 +15,7 @@ type RowProps = {
     setDragMode: (value: boolean) => void
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth>
+    synth: React.RefObject<Tone.Synth | null>
 
 };
 

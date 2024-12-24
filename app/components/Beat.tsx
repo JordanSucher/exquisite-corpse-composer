@@ -16,7 +16,7 @@ type BeatProps = {
     beat: number
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth>
+    synth: React.RefObject<Tone.Synth | null>
 }
 
 export default function Beat({notesPerBeat, bar, row, mouseDown, setMouseDown, dragMode, setDragMode, startingCol, beat, setNotes, playbackIndex, synth}: BeatProps) {

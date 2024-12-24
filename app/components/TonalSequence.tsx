@@ -13,7 +13,7 @@ type TonalSequenceProps = {
     setMouseDown: (value: boolean) => void;
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth>
+    synth: React.RefObject<Tone.Synth | null> 
 };
 
 export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, setNotes, playbackIndex, synth}: TonalSequenceProps) {

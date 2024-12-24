@@ -4,11 +4,11 @@ import TonalSequence from "./TonalSequence";
 // import RhythmSequence from "./RhythmSequence";
 import Audio from "./Audio";
 import Controller from "./Controller";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as Tone from 'tone'
 
 export default function Sequencer() {
-    const synth = useRef(new Tone.Synth().toDestination());
+    const synth = useRef<Tone.Synth | null>(null);
     const [octaves] = useState(2);
     const [bars] = useState(4);
     const [beatsPerBar] = useState(4);
@@ -24,6 +24,20 @@ export default function Sequencer() {
             setPlaying(!playing)
         }
     }
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            synth.current = new Tone.Synth().toDestination();
+        }
+        
+        // Cleanup
+        return () => {
+            if (synth.current) {
+                synth.current.dispose();
+            }
+        }
+    }, []);
+
 
     return (
         <div className="flex flex-col w-screen h-screen" 

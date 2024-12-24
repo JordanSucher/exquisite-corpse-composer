@@ -14,7 +14,7 @@ type CellProps = {
     col: number
     setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth>
+    synth: React.RefObject<Tone.Synth | null>
 }
 
 export default function Cell({bar, row, edge, mouseDown, setMouseDown, dragMode, setDragMode, col, setNotes, playbackIndex, synth}: CellProps) {
