@@ -42,6 +42,7 @@ export default function Cell({bar, row, edge, mouseDown, setMouseDown, dragMode,
     
     useEffect(() => {
         const triggerNote = () => {
+            if (!synth.current) return
             synth.current.triggerAttackRelease(note, '8n')
         }
         if (selected) {
