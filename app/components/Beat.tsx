@@ -1,8 +1,6 @@
 'use client'
 
-
 import Cell from "./Cell";
-import * as Tone from 'tone'
 
 type BeatProps = {
     notesPerBeat: number;
@@ -10,36 +8,46 @@ type BeatProps = {
     row: number
     mouseDown: boolean
     setMouseDown: (value: boolean) => void
-    dragMode: boolean
-    setDragMode: (value: boolean) => void
+    dragMode: number
+    setDragMode: (value: number) => void
     startingCol: number
     beat: number
-    setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth | null>
+    onSelect: (row: number, col: number, state: number) => void
+    getNextState: (state: number) => number
+    getColors: (row: number) => string[]
+    chords: Array<number>
+    getValue: (row: number, col: number, state: number) => string
+    cellStates: Array<number>
+    icons?: Array<React.ReactNode>
 }
 
-export default function Beat({notesPerBeat, bar, row, mouseDown, setMouseDown, dragMode, setDragMode, startingCol, beat, setNotes, playbackIndex, synth}: BeatProps) {
+export default function Beat({notesPerBeat, bar, row, mouseDown, setMouseDown, dragMode, setDragMode, startingCol, beat, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons}: BeatProps) {
     return (
-        <span className={`flex grow`}>
+        <>
             {Array.from({length: notesPerBeat}, (_, i) => (
                     <Cell 
                         key={i}
                         edge={i == 0 ? 'l' : i == notesPerBeat-1 ? 'r' : ''}
-                        bar={bar}
                         row={row}
                         mouseDown={mouseDown}
                         setMouseDown={setMouseDown}
                         dragMode={dragMode}
                         setDragMode={setDragMode}
                         col={startingCol + beat*notesPerBeat + i}
-                        setNotes={setNotes}
+                        chord={chords && chords[startingCol + beat*notesPerBeat + i]}
                         playbackIndex={playbackIndex}
-                        synth={synth}
+                        onSelect={onSelect}
+                        getNextState={getNextState}
+                        getColors={getColors}
+                        getValue={getValue}
+                        cellState={cellStates[startingCol + beat*notesPerBeat + i]}
+                        icons={icons ? icons : undefined}
+                        defaultColor={bar%2 == 0 ? 'bg-slate-200' : 'bg-white'}
                     />
                 ))
             }
-        </span>
+        </>
 
     );
 }

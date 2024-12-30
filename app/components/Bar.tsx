@@ -2,7 +2,6 @@
 
 import React from "react";
 import Beat from "./Beat";
-import * as Tone from 'tone'
 
 type BarProps = {
     row: number;
@@ -11,37 +10,47 @@ type BarProps = {
     notesPerBeat: number;
     mouseDown: boolean;
     setMouseDown: (value: boolean) => void
-    dragMode: boolean;
-    setDragMode: (value: boolean) => void
-    setNotes: React.Dispatch<React.SetStateAction<Array<Array<string>>>>
+    dragMode: number;
+    setDragMode: (value: number) => void
     playbackIndex: number
-    synth: React.RefObject<Tone.Synth | null>
+    onSelect: (row: number, col: number, state: number) => void
+    getNextState: (state: number) => number
+    getColors: (row: number) => string[]
+    chords: Array<number>
+    getValue: (row: number, col: number, state: number) => string
+    cellStates: Array<number>
+    icons?: Array<React.ReactNode>
 };
 
 
-export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, setNotes, playbackIndex, synth}: BarProps) {
+export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons}: BarProps) {
     const startingCol = bar*beatsPerBar*notesPerBeat
 
     return (
-        <span className={`flex grow`}>
+        <>
             {Array.from({length: beatsPerBar}, (_, i) => (
                     <Beat 
                         key={i}
                         beat={i}
                         row={row}
                         bar={bar}
+                        cellStates={cellStates}
                         notesPerBeat={notesPerBeat}
                         mouseDown={mouseDown}
                         setMouseDown={setMouseDown}
                         dragMode={dragMode}
                         setDragMode={setDragMode}
                         startingCol={startingCol}
-                        setNotes={setNotes}
                         playbackIndex={playbackIndex}
-                        synth={synth}
+                        onSelect={onSelect}
+                        getNextState={getNextState}
+                        getColors={getColors}
+                        chords={chords}
+                        getValue={getValue}
+                        icons={icons}
                     />
                 ))
             }
-        </span>
+        </>
     );
 }
