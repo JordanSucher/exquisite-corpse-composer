@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { SampleLibrary } from '../utils/Tonejs-instruments'
 import { useMemo } from "react";
 import { Bug, Candy, Dog, Milk, Moon } from "lucide-react";
+import { Suspense } from "react";
 
 
 type CellState = {
@@ -168,6 +169,7 @@ export default function Sequencer() {
 
     
     return (
+        <Suspense fallback={<div>Loading...</div>}>
             <div className="flex h-screen w-screen flex-col outline-none grow" 
             onMouseUp={() => {
                 mouseDown.current = false
@@ -228,5 +230,6 @@ export default function Sequencer() {
                     instrumentRefs={instrumentRefs}
                 />
             </div>
+        </Suspense>
     );
 }
