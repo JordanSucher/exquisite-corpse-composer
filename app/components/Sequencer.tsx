@@ -13,7 +13,6 @@ import { redirect } from "next/navigation";
 import { SampleLibrary } from '../utils/Tonejs-instruments'
 import { useMemo } from "react";
 import { Bug, Candy, Dog, Milk, Moon } from "lucide-react";
-import { Suspense } from "react";
 
 
 type CellState = {
@@ -169,67 +168,65 @@ export default function Sequencer() {
 
     
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <div className="flex h-screen w-screen flex-col outline-none grow" 
-            onMouseUp={() => {
-                mouseDown.current = false
-                dragMode.current = 0
-            }} 
-            onMouseLeave={() => {
-                mouseDown.current = false
-                dragMode.current = 0
-            }}
-            onKeyDown={onKeyDown}
-            onKeyUp={()=>setKeyDown(false)}
-            tabIndex={0}
-            >
-                <ChordSelector 
-                    octaves={octaves}
-                    bars={bars}
-                    beatsPerBar={beatsPerBar}
-                    notesPerBeat={notesPerBeat}
-                    mouseDown={mouseDown}
-                    playbackIndex={playbackIndex}
-                    chords={chords}
-                    setChords={setChords}
-                    cellStates={chordCellStates}
-                    setCellStates={setChordCellStates}
-                />
-                <TonalSequence 
-                    octaves={octaves}
-                    bars={bars}
-                    beatsPerBar={beatsPerBar}
-                    notesPerBeat={notesPerBeat}
-                    mouseDown={mouseDown}
-                    dragMode={dragMode}
-                    setNotesComplex={setNotesComplex}
-                    playbackIndex={playbackIndex}
-                    instrumentNames={instrumentNames}
-                    instrumentRefs={instrumentRefs}
-                    chords={chords}
-                    getNotes={getNotes}
-                    cellStates={noteCellStates}
-                    setCellStates={setNoteCellStates}
-                    instrumentCellStates={instrumentCellStates}
-                    setInstrumentCellStates={setInstrumentCellStates}
-                    instrumentIcons={instrumentIcons}
-                />
-                <Controller
-                    playing={playing}
-                    setPlaying={setPlaying}
-                    saveSong={saveSong}
-                    bpm={bpm}
-                    setBpm={setBpm}
-                />
-                <Audio
-                    bpm={bpm}
-                    notes={notes}
-                    isPlaying={playing}
-                    setIsPlaying={setPlaying}
-                    setPlaybackIndex={setPlaybackIndex}
-                    instrumentRefs={instrumentRefs}
-                />
-            </div>
-        </Suspense>
+        <div className="flex h-screen w-screen flex-col outline-none grow" 
+        onMouseUp={() => {
+            mouseDown.current = false
+            dragMode.current = 0
+        }} 
+        onMouseLeave={() => {
+            mouseDown.current = false
+            dragMode.current = 0
+        }}
+        onKeyDown={onKeyDown}
+        onKeyUp={()=>setKeyDown(false)}
+        tabIndex={0}
+        >
+            <ChordSelector 
+                octaves={octaves}
+                bars={bars}
+                beatsPerBar={beatsPerBar}
+                notesPerBeat={notesPerBeat}
+                mouseDown={mouseDown}
+                playbackIndex={playbackIndex}
+                chords={chords}
+                setChords={setChords}
+                cellStates={chordCellStates}
+                setCellStates={setChordCellStates}
+            />
+            <TonalSequence 
+                octaves={octaves}
+                bars={bars}
+                beatsPerBar={beatsPerBar}
+                notesPerBeat={notesPerBeat}
+                mouseDown={mouseDown}
+                dragMode={dragMode}
+                setNotesComplex={setNotesComplex}
+                playbackIndex={playbackIndex}
+                instrumentNames={instrumentNames}
+                instrumentRefs={instrumentRefs}
+                chords={chords}
+                getNotes={getNotes}
+                cellStates={noteCellStates}
+                setCellStates={setNoteCellStates}
+                instrumentCellStates={instrumentCellStates}
+                setInstrumentCellStates={setInstrumentCellStates}
+                instrumentIcons={instrumentIcons}
+            />
+            <Controller
+                playing={playing}
+                setPlaying={setPlaying}
+                saveSong={saveSong}
+                bpm={bpm}
+                setBpm={setBpm}
+            />
+            <Audio
+                bpm={bpm}
+                notes={notes}
+                isPlaying={playing}
+                setIsPlaying={setPlaying}
+                setPlaybackIndex={setPlaybackIndex}
+                instrumentRefs={instrumentRefs}
+            />
+        </div>
     );
 }
