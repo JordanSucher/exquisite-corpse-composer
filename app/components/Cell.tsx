@@ -1,85 +1,89 @@
 'use client'
 
 import React, { useState, useEffect} from "react";
-import { StarIcon } from "lucide-react";
+// import { StarIcon } from "lucide-react";
 
+type CellState = {
+    state: number;
+    hideLeftBorder: boolean;
+    hideRightBorder: boolean;
+}
 type CellProps = {
     row: number
     edge: string
-    mouseDown: boolean
-    setMouseDown: (value: boolean) => void
-    dragMode: number
-    setDragMode: (value: number) => void
+    mouseDown: React.RefObject<boolean>
+    dragMode: React.RefObject<number>
     col: number
     playbackIndex: number
     onSelect: (row: number, col: number, state: number) => void
-    getNextState: (state: number) => number
+    getNextState: (state: CellState) => CellState
     getColors: (row: number) => string[]
     chord: number
     getValue: (row: number, col: number, state: number) => string
-    cellState: number
+    cellState: CellState
     icons?: Array<React.ReactNode>
     defaultColor?: string
 }
 
-export default function Cell({defaultColor, row, edge, mouseDown, setMouseDown, dragMode, setDragMode, col, playbackIndex, onSelect, getNextState, getColors, getValue, chord, cellState, icons}: CellProps) {
+export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col, playbackIndex, onSelect, getNextState, getColors, getValue, chord, cellState, icons}: CellProps) {
     const [fillColors, setFillColors] = useState([defaultColor, defaultColor])
-    const borderColors = [edge == 'l' ? 'border-l-blue-800' : '', edge == 'r' ? 'border-r-blue-800' : '']
+    const borderColors = [edge == 'l' ? 'border-l-blue-600' : '', edge == 'r' ? 'border-r-blue-600' : '']
     const [value, setValue] = useState('')
 
     useEffect(() => {
         if (getColors) setFillColors([defaultColor, ...getColors(row)])
     }, [getColors, row, defaultColor, cellState])
 
-
-
     const onMouseDown = () => {
-        setDragMode(getNextState(cellState))
-        onSelect(row, col, getNextState(cellState))
-        setMouseDown(true)
+        mouseDown.current = true
+        const nextState = getNextState(cellState)
+        onSelect(row, col, nextState.state)
+        dragMode.current = nextState.state
     }
 
     const onMouseOver = () => {
-        if (mouseDown) {
-            onSelect(row, col, dragMode)
+        if (mouseDown.current) {
+            onSelect(row, col, dragMode.current)
         }
     }
 
     useEffect(() => {
-        if(getValue) setValue(getValue(row, col, cellState))
+        if(getValue) setValue(getValue(row, col, cellState.state))
     }, [getValue, cellState, row, col, chord])
     
-
     return (
         <div 
             className={`
-                ${icons ? '' : fillColors[cellState]} 
+                ${icons ? '' : `bg-${fillColors[cellState.state]}`}
                 grow
+                basis-0
                 text-black
                 min-w-[30px] 
                 min-h-[30px] 
-                border-[0.5px] 
+                border-[1.2px] 
                 border-blue-300
-                border-dotted 
                 ${playbackIndex == col ? 'opacity-85' : ''}
                 ${borderColors[0]}
                 ${borderColors[1]}
+                ${cellState.hideLeftBorder && cellState.state > 0 ? `border-l-${fillColors[cellState.state]}` : ''}
+                ${cellState.hideRightBorder && cellState.state > 0 ? `border-r-${fillColors[cellState.state]}` : ''}
+                border-dotted
                 select-none
                 flex items-center justify-center`}
             onMouseDown={onMouseDown}
             onDragStart={(e) => e.preventDefault()}
-            onMouseUp={() => setMouseDown(false)}
+            onMouseUp={() => {
+                mouseDown.current = false
+                dragMode.current = 0
+            }}
             onMouseOver={onMouseOver}   
         >
-            {icons && col!== -1 ? 
-            icons[cellState]
+            {icons ? 
+            icons[cellState.state]
             :  
-            icons && col==-1 ?
-            <StarIcon size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-black " />
-            :
             <span 
                 className="p-0 m-0 absolute">
-                {/* {value} */}
+                {value}
             </span>}
         </div>
     );

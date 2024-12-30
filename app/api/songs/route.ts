@@ -10,6 +10,7 @@ type SongData = {
     chords: number[];
     bpm: number;
     id: string | null;
+    instruments: number[]
 }
 
 export const POST = async (req: NextRequest) => {

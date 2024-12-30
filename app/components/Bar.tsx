@@ -3,27 +3,30 @@
 import React from "react";
 import Beat from "./Beat";
 
+type CellState = {
+    state: number;
+    hideLeftBorder: boolean;
+    hideRightBorder: boolean;
+}
 type BarProps = {
     row: number;
     bar: number;
     beatsPerBar: number;
     notesPerBeat: number;
-    mouseDown: boolean;
-    setMouseDown: (value: boolean) => void
-    dragMode: number;
-    setDragMode: (value: number) => void
+    mouseDown: React.RefObject<boolean>;
+    dragMode: React.RefObject<number>;
     playbackIndex: number
     onSelect: (row: number, col: number, state: number) => void
-    getNextState: (state: number) => number
+    getNextState: (state: CellState) => CellState
     getColors: (row: number) => string[]
     chords: Array<number>
     getValue: (row: number, col: number, state: number) => string
-    cellStates: Array<number>
+    cellStates: Array<CellState>
     icons?: Array<React.ReactNode>
 };
 
 
-export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons}: BarProps) {
+export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons}: BarProps) {
     const startingCol = bar*beatsPerBar*notesPerBeat
 
     return (
@@ -37,9 +40,7 @@ export default function Bar({row, bar, beatsPerBar, notesPerBeat, mouseDown, set
                         cellStates={cellStates}
                         notesPerBeat={notesPerBeat}
                         mouseDown={mouseDown}
-                        setMouseDown={setMouseDown}
                         dragMode={dragMode}
-                        setDragMode={setDragMode}
                         startingCol={startingCol}
                         playbackIndex={playbackIndex}
                         onSelect={onSelect}

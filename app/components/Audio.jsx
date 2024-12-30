@@ -21,10 +21,13 @@ export default function Audio({isPlaying, setIsPlaying, notes, setPlaybackIndex,
         sequenceRef.current = Tone.Transport.scheduleRepeat(time => {
             const currNotes = notesRef.current[currentStep];
 
+            if (currNotes.length > 0) console.log("currNotes", currNotes)
+
             currNotes.forEach(note => {
                 const instrumentName = note[0];
                 const instrument = instrumentRefs.current[instrumentName];
-                if (instrument) instrument.triggerAttackRelease(note[1], '8n', time);
+                const noteDuration = Tone.Time('8n').toSeconds() * note[2]
+                if (instrument) instrument.triggerAttackRelease(note[1], noteDuration, time);
             })
         
             // Update playback index

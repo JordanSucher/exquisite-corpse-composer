@@ -4,28 +4,34 @@ import Bar from "./Bar";
 import React from "react";
 import Cell from "./Cell";
 
+type CellState = {
+    state: number;
+    hideLeftBorder: boolean;
+    hideRightBorder: boolean;
+}
+
 type RowProps = {
     row: number;
     bars: number;
     beatsPerBar: number;
     notesPerBeat: number;
-    mouseDown: boolean;
-    setMouseDown: (value: boolean) => void;
-    dragMode: number
-    setDragMode: (value: number) => void
+    mouseDown: React.RefObject<boolean>;
+    dragMode: React.RefObject<number>;
     playbackIndex: number
     onSelect: (row: number, col: number, state: number) => void
-    getNextState: (state: number) => number
+    getNextState: (state: CellState) => CellState
     getColors: (row: number) => string[]
     chords: Array<number>
     getValue: (row: number, col: number, state: number) => string
-    cellStates: Array<number>
+    cellStates: Array<CellState>
     icons?: Array<React.ReactNode>
-    controlColStates?: Array<number>
-    setControlColStates?: React.Dispatch<React.SetStateAction<Array<number>>>
+    controlColStates?: Array<CellState>
+    setControlColStates?: React.Dispatch<React.SetStateAction<Array<CellState>>>
+    instrumentNames?: Array<string>
+    controlIcons?: Array<React.ReactNode>
 };
 
-export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, dragMode, setDragMode, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons, controlColStates, setControlColStates}: RowProps) {
+export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons, controlColStates, setControlColStates, instrumentNames, controlIcons}: RowProps) {
 
     return (
         <span className="flex w-screen grow">
@@ -33,19 +39,23 @@ export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, se
                 row={row}
                 edge="n"
                 mouseDown={mouseDown}
-                setMouseDown={setMouseDown}
                 dragMode={dragMode}
-                setDragMode={setDragMode}
                 playbackIndex={playbackIndex}
                 col={-1}
-                onSelect={()=>{if(setControlColStates && controlColStates) setControlColStates([...controlColStates].map((x,i)=>{return i==row?(x+1)%2:x}))}}
-                getNextState={(s)=> s==0?1:0}
-                getColors={()=>['bg-red-200']}
-                defaultColor='bg-blue-200'
+                onSelect={()=>{if(setControlColStates && controlColStates) setControlColStates([...controlColStates].map((x,i)=>{
+                    if (i==row && instrumentNames) {
+                        return ({state: (x.state+1)%instrumentNames.length, hideLeftBorder: false, hideRightBorder: false})
+                    } else {
+                        return ({state: x.state, hideLeftBorder: false, hideRightBorder: false})
+                    }
+                }))}}
+                getNextState={instrumentNames? (s)=> ({state: ((s.state+1)%instrumentNames.length), hideLeftBorder: false, hideRightBorder: false}) : (s)=>({state: s.state, hideLeftBorder: false, hideRightBorder: false})}
+                getColors={()=>(['gray-900', 'gray-800', 'gray-700', 'gray-600', 'gray-500'])}
+                defaultColor={'bg-black'}
                 chord={-1}
                 getValue={()=>''}
-                cellState={controlColStates ? controlColStates[row] : 0}
-                icons={icons}
+                cellState={controlColStates? controlColStates[row]: {state: 0, hideLeftBorder: false, hideRightBorder: false}}
+                icons={controlIcons}
             />
             {Array.from({length: bars}, (_, i) => (
                     <Bar
@@ -56,9 +66,7 @@ export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, se
                         beatsPerBar={beatsPerBar}
                         notesPerBeat={notesPerBeat}
                         mouseDown={mouseDown}
-                        setMouseDown={setMouseDown}
                         dragMode={dragMode}
-                        setDragMode={setDragMode}
                         playbackIndex={playbackIndex}
                         onSelect={onSelect}
                         getNextState={getNextState}

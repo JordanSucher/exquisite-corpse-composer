@@ -1,25 +1,28 @@
 import Row from "./Row";
-import { useState, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import { Lamp, LifeBuoy, Pickaxe, Popsicle, Puzzle, Pyramid, Skull } from "lucide-react";
 
-
+type CellState = {
+    state: number;
+    hideLeftBorder: boolean;
+    hideRightBorder: boolean;
+}
 type ChordSelectorProps = {
     octaves: number;
     bars: number;
     beatsPerBar: number;
     notesPerBeat: number;
-    mouseDown: boolean;
-    setMouseDown: (value: boolean) => void;
+    mouseDown: React.RefObject<boolean>;
     playbackIndex: number
     chords: Array<number>;
     setChords: React.Dispatch<React.SetStateAction<Array<number>>>
-    cellStates: Array<number>;
-    setCellStates: React.Dispatch<React.SetStateAction<Array<number>>>
+    cellStates: Array<CellState>;
+    setCellStates: React.Dispatch<React.SetStateAction<Array<CellState>>>
 };
 
-export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDown, setMouseDown, playbackIndex, setChords, chords, cellStates, setCellStates}: ChordSelectorProps) {
+export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDown, playbackIndex, setChords, chords, cellStates, setCellStates}: ChordSelectorProps) {
 
-    const [keyDragMode, setKeyDragMode] = useState(0)
+    const keyDragMode = useRef(0)
     const icons = [
         <Popsicle key={0} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1 " />,
         <Puzzle key={1} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
@@ -29,14 +32,15 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
         <Skull key={5} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
         <Pickaxe key={6} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />
     ];    
-    const getNextState = (state: number) => {
-        return (state + 1) % 7
+    const getNextState = (state: CellState) => {
+        const newState = (state.state + 1) % 7
+        return {...state, state: newState}
     }
 
     const getColors = useCallback(
         (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */ 
         _row: number) => {
-        const colors = ['bg-gray-200', 'bg-gray-300 p-1', 'bg-gray-400', 'bg-gray-500', 'bg-gray-600', 'bg-gray-700', 'bg-gray-800']
+        const colors = ['gray-200', 'gray-300', 'gray-400', 'gray-500', 'gray-600', 'gray-700', 'gray-800']
         return colors
     }, [])
 
@@ -60,7 +64,7 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
             console.log("setCellStates", setCellStates)
             setCellStates(cellStates => {
                 const newCellStates = [...cellStates]
-                newCellStates[col] = (newCellStates[col] + 1) % 7
+                newCellStates[col].state = (newCellStates[col].state + 1) % 7
                 return newCellStates
             })
 
@@ -74,9 +78,7 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
             beatsPerBar={beatsPerBar}
             notesPerBeat={notesPerBeat}
             mouseDown={mouseDown}
-            setMouseDown={setMouseDown} 
             dragMode={keyDragMode}
-            setDragMode={setKeyDragMode}
             playbackIndex={playbackIndex}
             onSelect={onSelect}
             getNextState={getNextState}
