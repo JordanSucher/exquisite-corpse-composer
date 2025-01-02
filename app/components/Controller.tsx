@@ -11,7 +11,7 @@ type ControllerProps = {
     bars: number
     setBars: (bars: number) => void
 }
-export default function Controller({playing, setPlaying, saveSong, bpm, setBpm, bars, setBars}: ControllerProps) {
+export default function Controller({playing, setPlaying, saveSong, bpm, setBpm}: ControllerProps) {
 
     return (
         <div 
