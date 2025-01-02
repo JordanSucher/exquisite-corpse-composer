@@ -1,6 +1,5 @@
 export const MusicTheory = {
-    generateScale: (chord: number, steps: number) => {
-        
+    generateScale: (chord: number, steps: number) => {        
         const degrees = [[1, 'major'], [2, 'minor'], [3, 'minor'], [4, 'major'], [5, 'major'], [6, 'minor'], [7, 'diminished']]
         const scalePatterns = {'major': [0, 2, 4, 5, 7, 9, 11], 'minor': [0, 2, 3, 5, 7, 8, 10], 'diminished': [0, 2, 3, 5, 6, 8, 10]}
         const semitones = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']

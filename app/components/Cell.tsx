@@ -58,8 +58,8 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
                 grow
                 basis-0
                 text-black
-                min-w-[30px] 
-                min-h-[30px] 
+                min-w-[25px] 
+                min-h-[25px] 
                 border-[1.2px] 
                 border-blue-300
                 ${playbackIndex == col ? 'opacity-85' : ''}
@@ -82,8 +82,7 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
             icons[cellState.state]
             :  
             <span 
-                className="p-0 m-0 absolute">
-                {value}
+                className={`p-0 m-0 absolute ${value}`}>
             </span>}
         </div>
     );

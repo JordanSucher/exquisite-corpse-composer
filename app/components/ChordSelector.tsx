@@ -64,7 +64,7 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
             console.log("setCellStates", setCellStates)
             setCellStates(cellStates => {
                 const newCellStates = [...cellStates]
-                newCellStates[col].state = (newCellStates[col].state + 1) % 7
+                newCellStates[col].state = state
                 return newCellStates
             })
 
