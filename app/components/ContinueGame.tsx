@@ -105,6 +105,9 @@ export default function ContinueGame() {
 
     useEffect (() => {
         setTakenTurns(measures / 5)
+        if (measures == 30) {
+            setShowTheSequencer(true)
+        }
     }, [measures])
 
     if (showTheSequencer) {
