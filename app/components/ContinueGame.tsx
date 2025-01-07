@@ -124,8 +124,8 @@ export default function ContinueGame() {
                 startingColIndex={measures == 30 || numPlayers == 1 ? 0 : startingColIndex}
                 preloadedSong={song}
                 changeBars={numPlayers == 1 ? true : false}
-                changeBeatsPerBar={takenTurns == 1 ? true : false}
-                changeNotesPerBeat={takenTurns == 1 ? true : false}
+                changeBeatsPerBar={takenTurns == 1 || numPlayers == 1 ? true : false}
+                changeNotesPerBeat={takenTurns == 1 || numPlayers == 1 ? true : false}
                 initBars={measures == 30 ? 30 : 6}
                 readOnlyBars={measures == 30 ? Array.from({length: 30}, (_, i) => i) : takenTurns > 1 && numPlayers > 1 ? [0] : []}
                 soloMode={numPlayers == 1}
