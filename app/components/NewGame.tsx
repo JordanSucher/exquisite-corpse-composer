@@ -80,7 +80,11 @@ export default function NewGame ({setGiveTheSpiel} : LandingProps) {
                             
                             <span className="flex gap-2 w-full justify-between">
                                 <p className="text-lg text-slate-600 mb-4 italic">players</p>
-                                <input type="number" className="text-lg text-orange-400 text-center bg-black border-dotted border-[1px] mb-4 italic w-[50px] focus:outline-none [&::-webkit-inner-spin-button]:opacity-100"
+                                <input 
+                                type="number" 
+                                max="6"
+                                min="2"
+                                className="text-lg text-orange-400 text-center bg-black border-dotted border-[1px] mb-4 italic w-[50px] focus:outline-none [&::-webkit-inner-spin-button]:opacity-100"
                                 value={numPlayers} 
                                 onChange={(e) => setNumPlayers(Number(e.target.value))}/>
                             </span>

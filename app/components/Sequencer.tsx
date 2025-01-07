@@ -135,7 +135,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
             instruments: instrumentCellStates,
             kits: drumkitCellStates,
             drums: rhythmCellStates,
-            numPlayers: 2,
+            numPlayers: song.numPlayers || 1,
             players: song.players || [],
             beatsPerBar: beatsPerBar,
             notesPerBeat: notesPerBeat,

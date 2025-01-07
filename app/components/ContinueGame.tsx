@@ -104,6 +104,12 @@ export default function ContinueGame() {
         }, [searchParams, showTheSequencer])
 
     useEffect (() => {
+        if (numPlayers == 1) {
+            setShowTheSequencer(true)
+        }
+    }, [numPlayers])
+
+    useEffect (() => {
         setTakenTurns(measures / 5)
         if (measures == 30) {
             setShowTheSequencer(true)
@@ -115,13 +121,14 @@ export default function ContinueGame() {
             <Sequencer 
                 currPlayer={players.find((player: Player) => player.email === waitingOn)}
                 setShowTheSequencer={setShowTheSequencer}
-                startingColIndex={measures == 30 ? 0 : startingColIndex}
+                startingColIndex={measures == 30 || numPlayers == 1 ? 0 : startingColIndex}
                 preloadedSong={song}
-                changeBars={false}
+                changeBars={numPlayers == 1 ? true : false}
                 changeBeatsPerBar={takenTurns == 1 ? true : false}
                 changeNotesPerBeat={takenTurns == 1 ? true : false}
                 initBars={measures == 30 ? 30 : 6}
-                readOnlyBars={measures == 30 ? Array.from({length: 30}, (_, i) => i) : takenTurns > 1 ? [0] : []}
+                readOnlyBars={measures == 30 ? Array.from({length: 30}, (_, i) => i) : takenTurns > 1 && numPlayers > 1 ? [0] : []}
+                soloMode={numPlayers == 1}
             />
         )
     }

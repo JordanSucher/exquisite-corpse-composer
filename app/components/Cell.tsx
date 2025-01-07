@@ -35,7 +35,6 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
 
     const borderColors = [edge == 'l' ? 'border-l-blue-600' : '', edge == 'r' ? 'border-r-blue-600' : '']
     const [value, setValue] = useState('')
-    const [isTouched] = useState(false);
 
     // useEffect(() => {
     //     if (getColors && cellState) setFillColors([defaultColor, ...getColors(row)])
@@ -60,24 +59,6 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
         if (getValue && cellState) setValue(getValue(row, col, cellState.state))
     }, [getValue, cellState, row, col, chord])
 
-    
-    // useEffect(() => {
-    //     const handleTouchMove = (e: TouchEvent) => {
-    //         e.preventDefault(); 
-    //         if (isTouched) onMouseOver();
-    //     };
-
-    //     document.addEventListener('touchmove', handleTouchMove, { passive: false });
-
-    //     // Cleanup the event listener on unmount
-    //     return () => {
-    //         document.removeEventListener('touchmove', handleTouchMove);
-    //     };
-    // }, [onMouseOver, isTouched]);
-
-    useEffect(() => {
-        console.log("isTouched: ", isTouched)
-    }, [isTouched])
 
     return (
         <div
@@ -105,21 +86,11 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
                 flex items-center justify-center
                 z-${zIndex}`}
             onMouseDown={onMouseDown}
-            // onTouchStart={()=> {onMouseDown(); setIsTouched(true)}}
             onDragStart={(e) => e.preventDefault()}
-            // onTouchCancel={() => {
-            //     setIsTouched(false)
-            //     mouseDown.current = false
-            // }}
             onMouseUp={() => {
                 mouseDown.current = false
                 dragMode.current = 0
             }}
-            // onTouchEnd={() => {
-            //     mouseDown.current = false
-            //     dragMode.current = 0
-            //     setIsTouched(false)
-            // }}
             onMouseOver={onMouseOver}  
         >
             {icons && cellState ? 

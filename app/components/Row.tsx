@@ -60,7 +60,7 @@ export default function Row({row, bars, beatsPerBar, notesPerBeat, mouseDown, dr
     }, [chords, bars, beatsPerBar, notesPerBeat])
 
     return (
-        <span className="flex relative grow max-h-[-webkit-fill-available] w-full">
+        <span className="flex relative grow max-h-[-webkit-fill-available] w-fit">
             <div className={`flex sticky left-0 bg-black basis-0 ${row == -1 ? `z-50` : 'z-10'}`}>
                 <Cell 
                     row={row}
