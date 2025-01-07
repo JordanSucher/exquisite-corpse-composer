@@ -23,6 +23,8 @@ export default function Home() {
         <Sequencer 
         soloMode={true}
         changeBars={true}
+        changeBeatsPerBar={true}
+        changeNotesPerBeat={true}
         initBars={2}/>
       }
     </>

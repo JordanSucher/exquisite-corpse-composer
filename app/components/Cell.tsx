@@ -91,7 +91,7 @@ export default function Cell({defaultColor, row, edge, mouseDown, dragMode, col,
                 border-blue-300
                 ${playbackIndex == col && togglePlaybackIndexOpacity ? 'opacity-70' : ''}
                 ${cellState && cellState.state > 0 ? `bg-${fillColors[cellState.state]}` 
-                    : playbackIndex == col && cellState.state == 0 ? 'bg-rose-100' : defaultColor}
+                    : playbackIndex == col && cellState.state == 0 ? 'bg-rose-100' : `bg-${defaultColor}`}
                 ${borderColors[0]}
                 ${borderColors[1]}
                 ${cellState && cellState.hideLeftBorder && cellState.state > 0 ? `border-l-${fillColors[cellState.state]}` : ''}

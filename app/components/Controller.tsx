@@ -57,14 +57,13 @@ export default function Controller({playing, setPlaying, saveSong, bpm, setBpm, 
                     max="9"
                     value={bars}
                     onChange={(e) => setBars(Number(e.target.value))}
-                    className="md:w-8  focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100
-                    p-1"
+                    className="w-8  focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100 p-1"
                     />
                     bars
                 </div>}
 
             {changeBeatsPerBar &&
-                <div tabIndex={-1} className="flex gap-2 focus:outline-none">
+                <div tabIndex={-1} className="hidden md:flex gap-2 focus:outline-none text-xs md:text-md items-center justify-center">
                     <input
                     tabIndex={-1}
                     type="number"
@@ -72,13 +71,13 @@ export default function Controller({playing, setPlaying, saveSong, bpm, setBpm, 
                     max="5"
                     value={beatsPerBar}
                     onChange={(e) => setBeatsPerBar(Number(e.target.value))}
-                    className="w-7 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100"
+                    className="w-8 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100 p-1"
                     />
                     beats ber bar   
                 </div>}
                 
             {changeNotesPerBeat &&
-                <div tabIndex={-1} className="flex gap-2 focus:outline-none">
+                <div tabIndex={-1} className="hidden md:flex gap-2 focus:outline-none text-xs md:text-md items-center justify-center">
                     <input
                     tabIndex={-1}
                     type="number"
@@ -86,7 +85,7 @@ export default function Controller({playing, setPlaying, saveSong, bpm, setBpm, 
                     max="5"
                     value={notesPerBeat}
                     onChange={(e) => setNotesPerBeat(Number(e.target.value))}
-                    className="w-7 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100"
+                    className="w-8 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100 p-1"
                     />
                     notes per beat
                 </div>
