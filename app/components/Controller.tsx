@@ -10,49 +10,94 @@ type ControllerProps = {
     setBpm: (bpm: number) => void
     bars: number
     setBars: (bars: number) => void
+    beatsPerBar: number
+    setBeatsPerBar: (beatsPerBar: number) => void
+    notesPerBeat: number
+    setNotesPerBeat: (notesPerBeat: number) => void
+    changeBars: boolean
+    changeBeatsPerBar: boolean
+    changeNotesPerBeat: boolean
+    soloMode?: boolean
 }
-export default function Controller({playing, setPlaying, saveSong, bpm, setBpm}: ControllerProps) {
+export default function Controller({playing, setPlaying, saveSong, bpm, setBpm, bars, setBars, beatsPerBar, setBeatsPerBar, notesPerBeat, setNotesPerBeat, changeBars, changeBeatsPerBar, changeNotesPerBeat}: ControllerProps) {
 
     return (
         <div 
-            className={`w-screen p-2 bg-slate-200 
+            className={`w-screen p-2 bg-rose-300 text-black
             flex items-center justify-center gap-4`}
         >
             <button 
+                tabIndex={-1}
                 className="focus:outline-none flex items-center justify-center 
-                bg-blue-500 w-[50px] h-[50px] rounded-full" 
-                onClick={() => setPlaying(!playing)}
+                bg-white w-[40px] h-[40px] rounded-full" 
+                onClick={(e) => {setPlaying(!playing); (e.target as HTMLButtonElement).blur() }}
             >
-                {playing ? <Pause color="white" fill="white" size = {30}/> 
-                : <Play color="white" fill="white" size = {30}/>}
+                {playing ? <Pause color="black" fill="black" size = {25}/> 
+                : <Play color="black" fill="black" size = {25}/>}
             </button>
-            <div className="flex items-center gap-2 text-black focus:outline-none active:none">
+            <div tabIndex={-1} className="flex items-center gap-2 focus:outline-none active:none text-xs md:text-md">
                 <input
+                    tabIndex={-1}
                     type="range"
                     min="60"
-                    max="400"
+                    max="500"
                     value={bpm}
                     onChange={(e) => setBpm(Number(e.target.value))}
-                    className="w-32 focus:outline-none active:none select-none"
+                    className="w-32 focus:outline-none active:none select-none accent-white hover:none"
                 />
-                <span>{bpm} BPM</span>
+                <span>{bpm} tempo</span>
             </div>
-            {/* <div className="text-black">
-                <input
-                type="number"
-                min="1"
-                max="8"
-                value={bars}
-                onChange={(e) => setBars(Number(e.target.value))}
-                className="w-32 focus:outline-none active:none select-none"
-                />
-            </div> */}
+
+            {changeBars &&
+                <div tabIndex={-1} className="hidden md:flex gap-2 focus:outline-none text-xs md:text-md items-center justify-center">
+                    <input
+                    tabIndex={-1}
+                    type="number"
+                    min="1"
+                    max="9"
+                    value={bars}
+                    onChange={(e) => setBars(Number(e.target.value))}
+                    className="md:w-8  focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100
+                    p-1"
+                    />
+                    bars
+                </div>}
+
+            {changeBeatsPerBar &&
+                <div tabIndex={-1} className="flex gap-2 focus:outline-none">
+                    <input
+                    tabIndex={-1}
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={beatsPerBar}
+                    onChange={(e) => setBeatsPerBar(Number(e.target.value))}
+                    className="w-7 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100"
+                    />
+                    beats ber bar   
+                </div>}
+                
+            {changeNotesPerBeat &&
+                <div tabIndex={-1} className="flex gap-2 focus:outline-none">
+                    <input
+                    tabIndex={-1}
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={notesPerBeat}
+                    onChange={(e) => setNotesPerBeat(Number(e.target.value))}
+                    className="w-7 focus:outline-none active:none select-none [&::-webkit-inner-spin-button]:opacity-100"
+                    />
+                    notes per beat
+                </div>
+            }
 
 
             <button 
-                className={`text-black bg-blue-400 p-2 rounded active:bg-blue-500 focus:outline-none`}
+                tabIndex={-1}
+                className={` h-[30px] text-black text-xs md:text-md flex items-center justify-center bg-white p-2 rounded active:bg-blue-500 focus:outline-none`}
                 onClick={saveSong}>
-                Save Song
+                {changeBars ? `Save Song` : `Take Turn`}
             </button>
         </div>
 

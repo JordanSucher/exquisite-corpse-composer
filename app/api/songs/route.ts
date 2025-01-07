@@ -6,22 +6,27 @@ import { NextRequest } from 'next/server';
 const redis = Redis.fromEnv();
 
 type SongData = {
-    notes: number[][];
+    notes: number[][][];
     chords: number[];
     bpm: number;
     id: string | null;
     instruments: object[];
     kits: object[];
-    drums: object[];
+    drums: object[]
+    numPlayers: number
+    players: object[]
+    beatsPerBar: number
+    notesPerBeat: number
+    waitingOn: string | null
 }
 
 export const POST = async (req: NextRequest) => {
     try {
         const data: SongData = await req.json();
         const id = data.id !== null ? data.id : crypto.randomUUID();
-
-        await redis.set(`song:${id}`, JSON.stringify(data));
-        return new NextResponse(JSON.stringify({ id }), { status: 200 });
+        const newData = { ...data, id };
+        await redis.set(`song:${id}`, JSON.stringify(newData));
+        return new NextResponse(JSON.stringify(newData), { status: 200 });
     } catch (error) {
         console.error(error);
         return new NextResponse("Failed to save song", { status: 500 });

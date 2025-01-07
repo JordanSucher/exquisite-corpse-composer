@@ -22,20 +22,59 @@ type CellState = {
     hideRightBorder: boolean;
 }
 
-export default function Sequencer() {
+type Player = {
+    email: string;
+    password: string;
+}
+
+
+type SongData = {
+    notes: number[][][];
+    chords: number[];
+    bpm: number;
+    id: string | null;
+    instruments: CellState[];
+    kits: CellState[];
+    drums: CellState[][];
+    numPlayers: number
+    players: Player[]
+    beatsPerBar: number
+    notesPerBeat: number
+    waitingOn: string | null
+}
+
+type SequencerProps = {
+    currPlayer?: Player
+    setShowTheSequencer?: (show: boolean) => void
+    preloadedSong?: SongData
+    soloMode?: boolean
+    startingColIndex?: number
+    initBars?: number
+    changeBars?: boolean
+    changeBeatsPerBar?: boolean
+    changeNotesPerBeat?: boolean
+    readOnlyBars?: Array<number>
+}
+
+export default function Sequencer({currPlayer, setShowTheSequencer, changeBars = false, changeBeatsPerBar = false, changeNotesPerBeat = false, preloadedSong, soloMode = false, startingColIndex = 0, initBars, readOnlyBars = []} : SequencerProps) {
     const synth = useRef<Tone.PolySynth | Tone.PluckSynth | null>(null);
     const instrumentRefs = useRef({});
     const drumRefs = useRef<{ [key: string]: Tone.Sampler }>({});
-    const [bpm, setBpm] = useState(150)
+    const [songIsLoading, setSongIsLoading] = useState(true)
+    const [samplersLoading, setSamplersLoading] = useState(true)
+    const [bpm, setBpm] = useState(200)
     const [octaves] = useState(2);
-    const [bars, setBars] = useState(4);
-    const [beatsPerBar] = useState(4);
-    const [notesPerBeat] = useState(3);
+    const [bars, setBars] = useState(initBars || 5);
+    const [beatsPerBar, setBeatsPerBar] = useState(4);
+    const [notesPerBeat, setNotesPerBeat] = useState(3);
     const mouseDown = useRef(false)
     const dragMode = useRef(0)
     const [keyDown, setKeyDown] = useState(false)
     const [playing, setPlaying] = useState(false)
+    const [song, setSong] = useState(preloadedSong || {} as SongData)
     const [playbackIndex, setPlaybackIndex] = useState(0)
+    const playbackUIRef = useRef<HTMLDivElement>(null)
+    const lastScrollTime = useRef(0);
     const [cols, setCols] = useState(bars*beatsPerBar*notesPerBeat)
     const [notes, setNotes] = useState<Array<Array<Array<string|number>>>>(Array.from({length: cols}, () => []))
     const [drums, setDrums] = useState<Array<Array<Array<string|number>>>>(Array.from({length: cols}, () => []))
@@ -51,22 +90,24 @@ export default function Sequencer() {
     const drumNames = useMemo(()=> ["4OP", "KPR", "Kit8", "Breakbeat"], [])
 
     const instrumentIcons = [
-            <Dog key={0} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <Moon key={1} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <Milk key={3} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <Candy key={4} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <Bug key={5} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
+            <Dog key={0} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+            <Moon key={1} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+            <Milk key={3} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+            <Candy key={4} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+            <Bug key={5} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
         ]
 
     const drumIcons = [
-            <PinIcon key={0} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <GemIcon key={1} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <BugIcon key={3} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-            <CarIcon key={4} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
+            <PinIcon key={0} size={"100%"} stroke="black" fill="pink" className="pointer-events-none bg-amber-300 p-1" />,
+            <GemIcon key={1} size={"100%"} stroke="black" fill="pink" className="pointer-events-none bg-amber-300 p-1" />,
+            <BugIcon key={3} size={"100%"} stroke="black" fill="pink" className="pointer-events-none bg-amber-300 p-1" />,
+            <CarIcon key={4} size={"100%"} stroke="black" fill="pink" className="pointer-events-none bg-amber-300 p-1" />,
     ]
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if ((e.key === ' ' || e.key === 'Space') && keyDown == false) {
+            e.preventDefault()
+            e.stopPropagation()
             setPlaying(!playing)
             setKeyDown(true)
         }
@@ -74,92 +115,244 @@ export default function Sequencer() {
 
     const saveSong = async () => {
         const existingId = searchParams.get('id')
-        const song = {
+        let nextPlayer = null
+        if (currPlayer && song.players && (song.players.findIndex(player=>player.email == currPlayer.email)+1) < song.players.length) {
+            nextPlayer = song.players[song.players.indexOf(currPlayer)+2] as Player
+        }
+        else if (currPlayer && song.players && (song.players.findIndex(player=>player.email == currPlayer.email)+1) == song.players.length) {
+            if (song.players.length == song.numPlayers) {
+                nextPlayer = song.players[0] as Player
+            } else {
+                nextPlayer = null
+            }
+        }
+
+        const newSong = {
             notes: notesComplex,
             chords,
             bpm: bpm,
             id: existingId,
             instruments: instrumentCellStates,
             kits: drumkitCellStates,
-            drums: rhythmCellStates
+            drums: rhythmCellStates,
+            numPlayers: 2,
+            players: song.players || [],
+            beatsPerBar: beatsPerBar,
+            notesPerBeat: notesPerBeat,
+            waitingOn: nextPlayer ? nextPlayer.email : null
         }
-        const id = await songStorage.save(song)
-        if (id) {
+
+        if (!soloMode && (chords.length/(beatsPerBar*notesPerBeat) < 30)) {
+            //add 5 add'l measures to the end of the song
+            const addlCols = 5*newSong.beatsPerBar*newSong.notesPerBeat
+            newSong.chords = newSong.chords.concat(Array.from({length: addlCols}, () => 1))
+            newSong.drums = newSong.drums.map(row => row.concat(Array.from({length: addlCols}, () => ({
+                "state": 0,
+                "hideLeftBorder": false,
+                "hideRightBorder": false
+              }))))
+        }
+
+        const songData = await songStorage.save(newSong)
+        const id = songData.id
+        if (searchParams.get('id') == null) {
             redirect(`/?id=${id}`)
+        }
+        else if (id && setShowTheSequencer) {
+            setPlaying(false)
+            setShowTheSequencer(false)
         }
     }
 
     useEffect(() => {
-        setCols(bars*beatsPerBar*notesPerBeat)
-    }, [bars, beatsPerBar, notesPerBeat])
+        const newCols = bars*beatsPerBar*notesPerBeat
+        setCols(newCols)
+
+        setNoteCellStates(prevStates => {
+            if (prevStates[0].length < newCols) {
+                const addlCols = Array.from({length: octaves*7}, () => 
+                    Array.from({length: newCols - prevStates[0].length}, () => 
+                        ({state: 0, hideLeftBorder: false, hideRightBorder: false})
+                    )
+                )
+                return prevStates.map((row, index) => [...row, ...addlCols[index]])
+            }
+            // why do I need this? isn't it fine for noteCellStates to include data for columns that aren't currenly displayed?
+            // if (prevStates[0].length > newCols) {
+            //     return prevStates.map(row => row.slice(0, newCols))
+            // }
+            return prevStates
+        })
+    
+        setChordCellStates(prevStates => {
+            if (prevStates.length < newCols) {
+                const addlCols = Array.from({length: newCols - prevStates.length}, () => 
+                    ({state: 0, hideLeftBorder: false, hideRightBorder: false})
+                )
+                return [...prevStates, ...addlCols]
+            }
+
+            //similar to other places, dont really need this i think
+            // if (prevStates.length > newCols) {
+            //     return prevStates.slice(0, newCols)
+            // }
+            return prevStates
+        })
+
+        setRhythmCellStates(prevStates => {
+            if (prevStates[0].length < newCols) {
+                const addlCols = Array.from({length: octaves*7}, () => 
+                    Array.from({length: newCols - prevStates[0].length}, () => 
+                        ({state: 0, hideLeftBorder: false, hideRightBorder: false})
+                    )
+                )
+                return prevStates.map((row, index) => [...row, ...addlCols[index]])
+            }
+
+            //leaving this out 
+            // if (prevStates[0].length > newCols) {
+            //     return prevStates.map(row => row.slice(0, newCols))
+            // }
+            return prevStates
+        })
+
+        setChords(prevChords => {
+            if (prevChords.length < newCols) {
+                const addlChords = Array.from({length: newCols - prevChords.length}, () => 1)
+                return [...prevChords, ...addlChords]
+            }
+            //leaving this out
+            // if (prevChords.length > newCols) {
+            //     return prevChords.slice(0, newCols)
+            // }
+            return prevChords
+        })
+
+        setNotesComplex (prevNotesComplex => prevNotesComplex.map((row: number[][]) => {
+            return row.map((rowGroup: number[]) => {
+                return rowGroup.filter((col: number) => col < newCols)
+            })
+        }))
+
+    }, [bars, beatsPerBar, notesPerBeat, octaves])
+
+    // useEffect(() => {
+    //     console.log("readonly bars", readOnlyBars)
+    // }, [readOnlyBars])
+
+    const retrieveSong = useCallback(async (songId: string) => {
+        const song = await songStorage.load(songId);
+        setSong(song)
+    }, [])
 
     useEffect (() => {
-        const retrieveSong = async (songId: string) => {
-            const song = await songStorage.load(songId);
-            if (song) {
-                // load song
-                console.log("song", song)
-                setNotesComplex(song.notes)
-                setChords(song.chords) 
-                setChordCellStates(song.chords.map((x: number) => ({state: x-1, hideLeftBorder: false, hideRightBorder: false})))
-                setInstrumentCellStates(song.instruments)
-                const newNoteCellStates = Array.from({length: octaves*7}, () => Array.from({length: cols}, () => ({state: 0, hideLeftBorder: false, hideRightBorder: false})))
-
-                song.notes.forEach((row: number[][], rowIndex: number) => {
-                    row.forEach((rowGroup) => {
-                        rowGroup.forEach((colIndex: number) => {
-                            newNoteCellStates[rowIndex][colIndex].state = 1
-                        })
-                    })
-                })
-
-                setNoteCellStates(newNoteCellStates)
-
-                setDrumkitCellStates(song.kits)
-                setRhythmCellStates(song.drums)
-
-                setBpm(song.bpm)
-            }
-        }
         const songId = searchParams.get('id')
-        if (songId) {
+        if (!songId) setSongIsLoading(false)
+        if (songId && preloadedSong == null) {
             retrieveSong(songId)
         }
-    }, [searchParams, cols, octaves])
+    }, [searchParams, retrieveSong, preloadedSong])
+
+    useEffect(() => {
+        const now = Date.now(); // Current timestamp
+        const cooldown = 500; // 500ms cooldown period
+
+        if (now - lastScrollTime.current > cooldown) {
+            // If enough time has passed, scroll and update the lastScrollTime
+            if (playbackUIRef.current) {
+                playbackUIRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center',
+                });
+            }
+            lastScrollTime.current = now;
+        }
+    }, [playbackIndex]);
+
+    useEffect(() => {
+        if (song && song.chords && song.chords.length > 0) {
+            // print song
+            console.log("song", song)
+            if (song.chords.length / (song.beatsPerBar*song.notesPerBeat) < bars) {
+                setBars(song.chords.length / (song.beatsPerBar*song.notesPerBeat))
+            }
+            setBeatsPerBar(song.beatsPerBar)
+            setNotesPerBeat(song.notesPerBeat)
+
+            setNotesComplex(song.notes)
+            setChords(song.chords) 
+            setChordCellStates(song.chords.map((x: number) => ({state: x-1, hideLeftBorder: false, hideRightBorder: false})))
+            setInstrumentCellStates(song.instruments)
+            // similar deal, couldnt this be the length of the total song, not just the cols to display?
+            // const newNoteCellStates = Array.from({length: octaves*7}, () => Array.from({length: cols}, () => ({state: 0, hideLeftBorder: false, hideRightBorder: false})))
+            const newNoteCellStates = Array.from({length: octaves*7}, () => Array.from({length: song.chords.length}, () => ({state: 0, hideLeftBorder: false, hideRightBorder: false})))
+
+            song.notes.forEach((row: number[][], rowIndex: number) => {
+                row.forEach((rowGroup) => {
+                    rowGroup.forEach((colIndex: number) => {
+                        newNoteCellStates[rowIndex][colIndex].state = 1
+                    })
+                })
+            })
+
+            setNoteCellStates(newNoteCellStates)
+            setDrumkitCellStates(song.kits)
+            setRhythmCellStates(song.drums)
+
+            setBpm(song.bpm)
+
+            setSongIsLoading(false)
+        }
+    }, [song, octaves, cols, bars, beatsPerBar, notesPerBeat])
+
+    // useEffect(() => {
+    //     console.log("changebeatsperbar", changeBeatsPerBar, "changeNotesPerBeat", changeNotesPerBeat)
+    // }, [changeBeatsPerBar, changeNotesPerBeat])
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const masterGain = new Tone.Gain(0.5).toDestination(); 
-            const loadedInstruments = SampleLibrary.load({
-                instruments: instrumentNames,
-                onload: () => {
-                    Object.values(loadedInstruments).forEach((instrument) => {
-                        const sampler = instrument as Tone.Sampler
-                        sampler.set({
-                            attack: .1,
-                            release: 1.5,
-                        });
-                        sampler.connect(masterGain);
-                    })
-                    instrumentRefs.current = loadedInstruments
-                    synth.current = loadedInstruments["cello"]
-                }
-            })
 
-            //load the drums
-            drumNames.forEach((drumkit) => {
-                drumRefs.current[drumkit] = new Tone.Sampler ({
-                    'C1': 'kick.mp3',
-                    'D1': 'snare.mp3',
-                    'E1': 'hihat.mp3',
-                }, {
-                    baseUrl: `/samples/${drumkit}/`,
+            const instrumentsPromise = new Promise((resolve) => {
+                const loadedInstruments = SampleLibrary.load({
+                    instruments: instrumentNames,
                     onload: () => {
-                        drumRefs.current[drumkit].connect(masterGain)
+                        Object.values(loadedInstruments).forEach((instrument) => {
+                            const sampler = instrument as Tone.Sampler
+                            sampler.set({
+                                attack: .1,
+                                release: 1.5,
+                            });
+                            sampler.connect(masterGain);
+                        })
+                        instrumentRefs.current = loadedInstruments
+                        synth.current = loadedInstruments["cello"]
+                        resolve(true);
                     }
                 })
-            })
+            });
 
+            //load the drums
+            const drumPromises = drumNames.map((drumkit) => 
+                new Promise((resolve) => {
+                    drumRefs.current[drumkit] = new Tone.Sampler ({
+                        'C1': 'kick.mp3',
+                        'D1': 'snare.mp3',
+                        'E1': 'hihat.mp3',
+                    }, {
+                        baseUrl: `/samples/${drumkit}/`,
+                        onload: () => {
+                            drumRefs.current[drumkit].connect(masterGain)
+                            resolve(true);
+                        }
+                    })
+                })
+            );
+
+            Promise.all([instrumentsPromise, ...drumPromises]).then(() => {
+                setSamplersLoading(false)
+            })
 
         }
         
@@ -188,12 +381,14 @@ export default function Sequencer() {
     )
 
     useEffect(() => {
-        const notesByCol = Array.from({length: cols}, () => [] as number[][])
+        //another instance where this should be the 100% length of the piece, i think
+        // const notesByCol = Array.from({length: cols}, () => [] as number[][])
+        const notesByCol = Array.from({length: chords.length}, () => [] as number[][])
 
         notesComplex.forEach((row, rowIndex) => {
             row.forEach((rowGroup) => {
                 // console.log("rowGroup", rowGroup)
-                notesByCol[rowGroup[0]].push([rowIndex, rowGroup.length])
+                if (notesByCol[rowGroup[0]]) notesByCol[rowGroup[0]].push([rowIndex, rowGroup.length])
             })
         })
 
@@ -210,10 +405,12 @@ export default function Sequencer() {
 
         setNotes(notesByColHydrated)
 
-    }, [notesComplex, cols, getNotes, instrumentCellStates, instrumentNames])
+    }, [notesComplex, cols, getNotes, instrumentCellStates, instrumentNames, chords])
 
     useEffect(() => {
-        const drumsByCol = Array.from({length: cols}, () => [] as [string, string, number][])
+        //and here
+        // const drumsByCol = Array.from({length: cols}, () => [] as [string, string, number][])
+        const drumsByCol = Array.from({length: chords.length}, () => [] as [string, string, number][])
 
         rhythmCellStates.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
@@ -228,10 +425,12 @@ export default function Sequencer() {
         })
 
         setDrums(drumsByCol)
-    }, [rhythmCellStates, cols, getRhythm, drumkitCellStates, drumNames])
+    }, [rhythmCellStates, cols, getRhythm, drumkitCellStates, drumNames, chords])
     
+    if(songIsLoading || samplersLoading) return <></>
+
     return (
-        <div className="flex h-screen w-screen flex-col outline-none grow justify-between" 
+        <div className="flex h-screen w-screen flex-col outline-none grow justify-between touch-auto" 
         onMouseUp={() => {
             mouseDown.current = false
             dragMode.current = 0
@@ -244,8 +443,9 @@ export default function Sequencer() {
         onKeyUp={()=>setKeyDown(false)}
         tabIndex={0}
         >
-            <div className="flex flex-col">
-                <ChordSelector 
+            <div className="flex flex-col grow overflow-auto bg-white">
+                <div className="flex relative flex-col grow sticky top-0 bg-white z-50 basis-0 max-h-[40px]">
+                    <ChordSelector 
                     octaves={octaves}
                     bars={bars}
                     beatsPerBar={beatsPerBar}
@@ -256,9 +456,12 @@ export default function Sequencer() {
                     setChords={setChords}
                     cellStates={chordCellStates}
                     setCellStates={setChordCellStates}
-                />
-            </div>
-            <div className="flex flex-col grow overflow-auto">
+                    startingColIndex={startingColIndex}
+                    soloMode={soloMode}
+                    readOnlyBars={readOnlyBars}
+                    playbackUIRef={playbackUIRef}
+                    />
+                </div>
                 <TonalSequence 
                     octaves={octaves}
                     bars={bars}
@@ -266,6 +469,7 @@ export default function Sequencer() {
                     notesPerBeat={notesPerBeat}
                     mouseDown={mouseDown}
                     dragMode={dragMode}
+                    notesComplex={notesComplex}
                     setNotesComplex={setNotesComplex}
                     playbackIndex={playbackIndex}
                     instrumentNames={instrumentNames}
@@ -277,6 +481,10 @@ export default function Sequencer() {
                     instrumentCellStates={instrumentCellStates}
                     setInstrumentCellStates={setInstrumentCellStates}
                     instrumentIcons={instrumentIcons}
+                    startingColIndex={startingColIndex}
+                    soloMode={soloMode}
+                    readOnlyBars={readOnlyBars}
+                    playbackUIRef={playbackUIRef}
                 />
                 <RhythmSequence 
                     bars={bars}
@@ -294,6 +502,10 @@ export default function Sequencer() {
                     chords={chords}
                     getRhythm={getRhythm}
                     drumRefs={drumRefs}
+                    startingColIndex={startingColIndex}
+                    soloMode={soloMode}
+                    readOnlyBars={readOnlyBars}
+                    playbackUIRef={playbackUIRef}
                 />
             </div>
             <Controller
@@ -304,6 +516,14 @@ export default function Sequencer() {
                 setBpm={setBpm}
                 bars={bars}
                 setBars={setBars}
+                beatsPerBar={beatsPerBar}
+                setBeatsPerBar={setBeatsPerBar}
+                notesPerBeat={notesPerBeat}
+                setNotesPerBeat={setNotesPerBeat}
+                changeBars={changeBars}
+                changeBeatsPerBar={changeBeatsPerBar}
+                changeNotesPerBeat={changeNotesPerBeat}
+                soloMode={soloMode}
             />
             <Audio
                 bpm={bpm}
@@ -315,6 +535,7 @@ export default function Sequencer() {
                 instrumentRefs={instrumentRefs}
                 drumRefs={drumRefs}
                 cols={cols}
+                startingColIndex={startingColIndex}
             />
         </div>
     );

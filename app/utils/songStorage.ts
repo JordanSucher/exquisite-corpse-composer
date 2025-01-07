@@ -6,6 +6,11 @@ type SongData = {
     instruments: object[];
     kits: object[];
     drums: object[]
+    numPlayers: number
+    players: object[]
+    beatsPerBar: number
+    notesPerBeat: number
+    waitingOn: string | null
 }
 
 export const songStorage = {
@@ -19,8 +24,8 @@ export const songStorage = {
         });
 
         if (!response.ok) throw new Error('Failed to save song');
-        const { id } = await response.json();
-        return id;
+        const song = await response.json();
+        return song;
     },
 
     async load(id: string) {

@@ -4,7 +4,7 @@ export const MusicTheory = {
         const scalePatterns = {'major': [0, 2, 4, 5, 7, 9, 11], 'minor': [0, 2, 3, 5, 7, 8, 10], 'diminished': [0, 2, 3, 5, 6, 8, 10]}
         const semitones = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
         
-        const degree = degrees[chord-1]
+        const degree = degrees[chord-1] || [1, 'major']
                 
         const firstNoteIndex = scalePatterns['major'][Number(degree[0])-1]
         const firstNote = semitones[firstNoteIndex]

@@ -18,19 +18,22 @@ type ChordSelectorProps = {
     setChords: React.Dispatch<React.SetStateAction<Array<number>>>
     cellStates: Array<CellState>;
     setCellStates: React.Dispatch<React.SetStateAction<Array<CellState>>>
-};
+    startingColIndex: number
+    soloMode: boolean
+    readOnlyBars: Array<number>
+    playbackUIRef: React.RefObject<HTMLDivElement> | React.RefObject<null>};
 
-export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDown, playbackIndex, setChords, chords, cellStates, setCellStates}: ChordSelectorProps) {
+export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDown, playbackIndex, setChords, chords, cellStates, setCellStates, startingColIndex, soloMode, readOnlyBars, playbackUIRef}: ChordSelectorProps) {
 
     const keyDragMode = useRef(0)
     const icons = [
-        <Popsicle key={0} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1 " />,
-        <Puzzle key={1} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-        <Pyramid key={2} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-        <LifeBuoy key={3} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-        <Lamp key={4} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-        <Skull key={5} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />,
-        <Pickaxe key={6} size={"full"} stroke="black" fill="yellow" className="pointer-events-none bg-orange-300 p-1" />
+        <Popsicle key={0} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1 " />,
+        <Puzzle key={1} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+        <Pyramid key={2} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+        <LifeBuoy key={3} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+        <Lamp key={4} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+        <Skull key={5} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />,
+        <Pickaxe key={6} size={"100%"} stroke="black" fill="yellow" className="pointer-events-none bg-rose-300 p-1" />
     ];    
     const getNextState = (state: CellState) => {
         const newState = (state.state + 1) % 7
@@ -40,10 +43,13 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
     const getColors = useCallback(
         (/* eslint-disable-next-line @typescript-eslint/no-unused-vars */ 
         _row: number) => {
-        const colors = ['gray-200', 'gray-300', 'gray-400', 'gray-500', 'gray-600', 'gray-700', 'gray-800']
+        const colors = ['black', 'black', 'black', 'black', 'black', 'black', 'black']
         return colors
     }, [])
 
+    // useEffect(() => {
+    //     console.log("cell states", cellStates)
+    // }, [cellStates])
 
     const getValue = useCallback(
         ( _row: number, _col: number, state: number) => {
@@ -73,7 +79,7 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
 
     return (
         <Row
-            row={0}
+            row={-1}
             bars={bars}
             beatsPerBar={beatsPerBar}
             notesPerBeat={notesPerBeat}
@@ -87,6 +93,12 @@ export default function ChordSelector({bars, beatsPerBar, notesPerBeat, mouseDow
             chords={chords}
             cellStates={cellStates}
             icons={icons}
+            togglePlaybackIndexOpacity={false}
+            zIndex={40}
+            startingColIndex={startingColIndex}
+            soloMode={soloMode}
+            readOnlyBars={readOnlyBars}
+            playbackUIRef={playbackUIRef}
         />
     )
 }

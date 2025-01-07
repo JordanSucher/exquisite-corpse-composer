@@ -3,25 +3,31 @@
 import { useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 
-export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybackIndex, bpm, instrumentRefs, drumRefs, cols}) {
+export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybackIndex, bpm, instrumentRefs, drumRefs, cols, startingColIndex, soloMode = false}) {
     const sequenceRef = useRef(null)
     const notesRef = useRef(notes)
     const drumsRef = useRef(drums)
+    const colsRef = useRef(cols)
+    const currentIndexRef = useRef(0)
 
     const setupSequence = () => {
+        // console.log("setup sequence triggered, current index", currentIndexRef.current)
         if (sequenceRef.current) {
             // If we have an existing event ID, clear it
             Tone.Transport.clear(sequenceRef.current);
         }
-        let currentStep = 0
     
         // Schedule a repeating event
         sequenceRef.current = Tone.Transport.scheduleRepeat(time => {
-            const currNotes = notesRef.current[currentStep];
-            const currDrums = drumsRef.current[currentStep];
+            // console.log("scheduled repeat triggered, current index", currentIndexRef.current, "startingColIndex", startingColIndex)
 
-            if (currNotes.length > 0) console.log("currNotes", currNotes)
-            if (currDrums.length > 0) console.log("currDrums", currDrums)
+            let stepIndex = soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex;
+
+            const currNotes = notesRef.current[stepIndex] || []
+            const currDrums = drumsRef.current[stepIndex] || []
+
+            // if (currNotes.length > 0) console.log("currNotes", currNotes)
+            // if (currDrums.length > 0) console.log("currDrums", currDrums)
 
             // Trigger notes
             currNotes.forEach(note => {
@@ -39,11 +45,14 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
                 if (kit) kit.triggerAttackRelease(drum[1], noteDuration, time);
             })
         
-            // Update playback index
-            setPlaybackIndex(currentStep);
-            
             // Update step
-            currentStep = (currentStep + 1) % cols;
+            currentIndexRef.current = (currentIndexRef.current + 1) % (colsRef.current)
+            requestAnimationFrame(() => {
+                setPlaybackIndex(soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex)
+            });
+            // setPlaybackIndex(soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex)
+            // 
+           
 
         }, "8n");
 
@@ -81,6 +90,10 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
     useEffect(() => {
         drumsRef.current = drums;
     }, [drums]);
+
+    useEffect(() => {
+        colsRef.current = cols;
+    }, [cols]);
 
     useEffect(() => {
         setupSequence();

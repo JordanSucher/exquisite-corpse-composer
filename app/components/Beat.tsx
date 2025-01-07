@@ -23,9 +23,13 @@ type BeatProps = {
     getValue: (row: number, col: number, state: number) => string
     cellStates: Array<CellState>
     icons?: Array<React.ReactNode>
-}
+    togglePlaybackIndexOpacity?: boolean
+    zIndex?: number
+    startingColIndex: number
+    readOnly: boolean
+    playbackUIRef: React.RefObject<HTMLDivElement> | React.RefObject<null>}
 
-export default function Beat({notesPerBeat, bar, row, mouseDown, dragMode, startingCol, beat, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons}: BeatProps) {
+export default function Beat({notesPerBeat, bar, row, mouseDown, dragMode, startingCol, beat, playbackIndex, onSelect, getNextState, getColors, getValue, chords, cellStates, icons, togglePlaybackIndexOpacity, zIndex, startingColIndex, readOnly, playbackUIRef}: BeatProps) {
     return (
         <>
             {Array.from({length: notesPerBeat}, (_, i) => (
@@ -44,7 +48,12 @@ export default function Beat({notesPerBeat, bar, row, mouseDown, dragMode, start
                         getValue={getValue}
                         cellState={cellStates[startingCol + beat*notesPerBeat + i]}
                         icons={icons ? icons : undefined}
-                        defaultColor={bar%2 == 0 ? 'slate-200' : 'white'}
+                        defaultColor={!togglePlaybackIndexOpacity ? 'black' :bar%2 == 0 ? 'slate-200' : 'white'}
+                        togglePlaybackIndexOpacity={togglePlaybackIndexOpacity}
+                        zIndex={zIndex}
+                        startingColIndex={startingColIndex}
+                        readOnly={readOnly}
+                        playbackUIRef={playbackUIRef}
                     />
                 ))
             }

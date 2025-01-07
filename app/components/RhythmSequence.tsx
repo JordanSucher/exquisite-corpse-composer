@@ -24,17 +24,22 @@ type RhythmSequenceProps = {
     drumIcons: Array<React.ReactNode>
     drumRefs: React.RefObject<Record<string, Tone.Sampler>>
     getRhythm: (row: number) => string
+    startingColIndex: number
+    soloMode: boolean
+    readOnlyBars: Array<number>
+    playbackUIRef: React.RefObject<HTMLDivElement> | React.RefObject<null>
     
 }
 
-export default function RhythmSequence({cellStates, setCellStates, drumCellStates, setDrumCellStates, bars, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, chords, drumNames, drumIcons, drumRefs, getRhythm}: RhythmSequenceProps) {
+export default function RhythmSequence({cellStates, setCellStates, drumCellStates, setDrumCellStates, bars, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, chords, drumNames, drumIcons, drumRefs, getRhythm, startingColIndex, soloMode, readOnlyBars, playbackUIRef}: RhythmSequenceProps) {
 
     const rows = 3
 
     const getColors = useCallback(
-        (row: number) => {
-        const colors = ['red-500', 'green-500', 'blue-500', 'yellow-500', 'orange-500', 'purple-500', 'pink-500']
-        return [colors[row%7]]
+        (
+            /* eslint-disable-next-line @typescript-eslint/no-unused-vars */ 
+            _row: number) => {
+        return ["slate-400"]
     }, [])
 
     const getNextState = (state: CellState) => {
@@ -97,6 +102,12 @@ export default function RhythmSequence({cellStates, setCellStates, drumCellState
                         setControlColStates={setDrumCellStates}
                         instrumentNames={drumNames}
                         controlIcons={drumIcons}
+                        togglePlaybackIndexOpacity={true}
+                        zIndex={0}
+                        startingColIndex={startingColIndex}
+                        soloMode={soloMode}
+                        readOnlyBars={readOnlyBars}
+                        playbackUIRef={playbackUIRef}
                     />
                 ))
             }

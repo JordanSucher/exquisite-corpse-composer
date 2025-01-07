@@ -1,7 +1,7 @@
 'use client'
 
 import Row from "./Row";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import * as Tone from 'tone'
 
 type CellState = {
@@ -27,15 +27,20 @@ type TonalSequenceProps = {
     instrumentCellStates: Array<CellState>
     setInstrumentCellStates: React.Dispatch<React.SetStateAction<Array<CellState>>>
     setNotesComplex: React.Dispatch<React.SetStateAction<Array<Array<Array<number>>>>>
+    notesComplex: Array<Array<Array<number>>>
     instrumentIcons: Array<React.ReactNode>
-};
+    startingColIndex: number
+    soloMode: boolean
+    readOnlyBars: Array<number>
+    playbackUIRef: React.RefObject<HTMLDivElement> | React.RefObject<null>};
 
-export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, getNotes, chords, cellStates, setCellStates, instrumentCellStates, setInstrumentCellStates, setNotesComplex, instrumentNames, instrumentRefs, instrumentIcons}: TonalSequenceProps) {
-    const rows = octaves*7
+export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat, mouseDown, dragMode, playbackIndex, getNotes, chords, cellStates, setCellStates, instrumentCellStates, setInstrumentCellStates, setNotesComplex, notesComplex, instrumentNames, instrumentRefs, instrumentIcons, startingColIndex, soloMode, readOnlyBars, playbackUIRef}: TonalSequenceProps) {
+    const rows = useMemo(() => octaves*7, [octaves])
+    const cols = useMemo(() => bars*beatsPerBar*notesPerBeat, [bars, beatsPerBar, notesPerBeat])
     
     const getColors = useCallback(
         (row: number) => {
-        const colors = ['red-500', 'green-500', 'blue-500', 'yellow-500', 'orange-500', 'purple-500', 'pink-500']
+        const colors = ['red-400', 'green-400', 'blue-400', 'yellow-400', 'orange-400', 'purple-400', 'pink-400']
         return [colors[row%7]]
     }, [])
 
@@ -53,8 +58,7 @@ export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat,
         return {...state, state: newState}
     }
     
-    const onSelect = useCallback (
-        (row: number, col: number, state: number) => {
+    const onSelect = useCallback ((row: number, col: number, state: number) => {
             const notes = getNotes(row, col)
             const note = notes[row]        
             
@@ -67,92 +71,81 @@ export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat,
             }
         
             if (state == 1) {
-                setNotesComplex((prevNotes) => {
-                    const newNotes = [...prevNotes]
+                //calculate all state changes first
+                const newNotesComplex = [...notesComplex]
+                const newCellStates = [...cellStates] 
 
-                    if(!newNotes[row].map((rowGroup)=>rowGroup.includes(col)).includes(true)) {
+                if(!newNotesComplex[row].map((rowGroup)=>rowGroup.includes(col)).includes(true)) {
+                    triggerNote()
+                    let adjacentCol = false
 
-                        //play note
-                        triggerNote()
-                        let adjacentCol = false
+                    if(dragMode.current > 0) {
+                        const adjacentCols = [col-1, col+1].filter((adjCol) => adjCol >= 0 && adjCol < cols)
 
-                        if(dragMode.current > 0) {
-                            //if row is selected on adjacent column
-                            const adjacentCols = [col-1, col+1].filter((adjCol) => adjCol >= 0 && adjCol < bars*beatsPerBar*notesPerBeat)
+                        adjacentCols.forEach((adjCol) => {
+                            newNotesComplex[row] = newNotesComplex[row].map((rowGroup) => {
+                                if(rowGroup.includes(adjCol)) {
+                                    // console.log("adjacent group", rowGroup)
+                                    const newGroup = [...rowGroup, col].sort((a, b) => a - b)
+                                    adjacentCol = true
 
-                            adjacentCols.forEach((adjCol) => {
-                                newNotes[row] = newNotes[row].map((rowGroup) => {
-                                    if(rowGroup.includes(adjCol)) {
-                                        // console.log("adjacent group", rowGroup)
-                                        const newGroup = [...rowGroup, col].sort((a, b) => a - b)
-                                        adjacentCol = true
-                                        setCellStates((prevStates) => {
-                                            const newStates = [...prevStates]
-                                            newGroup.forEach((col) => {
-                                                newStates[row][col] = {state: 1, hideLeftBorder: true, hideRightBorder: true}
-                                            })
-                                            return newStates
-                                        })
-                                        return newGroup
-                                    }
-                                    else {
-                                        return rowGroup
-                                    }
-                                })
+                                    newGroup.forEach((col) => {
+                                        newCellStates[row][col] = {
+                                            state: 1, 
+                                            hideLeftBorder: true, 
+                                            hideRightBorder: true}
+                                    })
+
+                                    return newGroup
+                                }
+                                else {
+                                    return rowGroup
+                                }
                             })
-                        }
-
-                        if(!adjacentCol) {
-                            newNotes[row].push([col])
-                        
-                            setCellStates((prevStates) => {
-                                const newStates = [...prevStates]
-                                newStates[row][col].state = 1
-                                return newStates
-                            })
-                        }
-                       
+                        })
                     }
-                    // console.log("newNotes", newNotes)
-                    return newNotes
-                })
 
+                    if(!adjacentCol) {
+                        newNotesComplex[row].push([col])
+                        newCellStates[row][col].state = 1
+                    }
+
+                    setNotesComplex(newNotesComplex)
+                    setCellStates(newCellStates)
+                }
             } else {
-                setNotesComplex((prevNotes) => {
-                    const newNotes = [...prevNotes]
-                    const rowGroup = newNotes[row].find((group) => group.includes(col))
-                    newNotes[row] = newNotes[row].filter((group) => group != rowGroup)
+                const newNotesComplex = [...notesComplex]
+                const newCellStates = [...cellStates] 
 
-                    if (rowGroup && rowGroup.length == 1) {
-                        
-                    }
-                    else if (rowGroup && rowGroup[0] == col) {
+                const rowGroup = newNotesComplex[row].find((group) => group.includes(col))
+
+                newNotesComplex[row] = newNotesComplex[row].filter((group) => group != rowGroup)
+
+                if (rowGroup && rowGroup.length > 1) {
+                    if (rowGroup[0] == col) {
                         rowGroup.shift()
-                        newNotes[row].push(rowGroup)
+                        newNotesComplex[row].push(rowGroup)
                     }
-                    else if (rowGroup && rowGroup[rowGroup.length-1] == col) {
+                    else if (rowGroup[rowGroup.length-1] == col) {
                         rowGroup.pop()
-                        newNotes[row].push(rowGroup)
+                        newNotesComplex[row].push(rowGroup)
                     }
-                    else if (rowGroup) {
+                    else {
                         const index = rowGroup.indexOf(col)
                         const newGroup1 = rowGroup.slice(0, index)
                         const newGroup2 = rowGroup.slice(index+1)
-                        newNotes[row].push(newGroup1)
-                        newNotes[row].push(newGroup2)
+                        newNotesComplex[row].push(newGroup1)
+                        newNotesComplex[row].push(newGroup2)
                     }
+                }
 
-                    return newNotes
-                })
+                newCellStates[row][col] = {state: 0, hideLeftBorder: false, hideRightBorder: false}
 
-                setCellStates((prevStates) => {
-                    const newStates = [...prevStates]
-                    newStates[row][col] = {state: 0, hideLeftBorder: false, hideRightBorder: false}
-                    return newStates
-                })
+                setNotesComplex(newNotesComplex)
+                setCellStates(newCellStates)
+
             }
-        }, [instrumentNames, instrumentCellStates, instrumentRefs, getNotes, setCellStates, setNotesComplex, bars, beatsPerBar, notesPerBeat, dragMode]
-    ) 
+        }, [instrumentNames, instrumentCellStates, instrumentRefs, getNotes, setCellStates, setNotesComplex, dragMode, cellStates, notesComplex, cols])
     
     return (
         <>
@@ -176,6 +169,12 @@ export default function TonalSequence({octaves, bars, beatsPerBar, notesPerBeat,
                         setControlColStates={setInstrumentCellStates}
                         instrumentNames={instrumentNames}
                         controlIcons={instrumentIcons}
+                        togglePlaybackIndexOpacity={true}
+                        zIndex={0}
+                        startingColIndex={startingColIndex}
+                        soloMode = {soloMode}
+                        readOnlyBars={readOnlyBars}
+                        playbackUIRef={playbackUIRef}
                     />
                 ))
             }
