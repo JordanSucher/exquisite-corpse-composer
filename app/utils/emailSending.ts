@@ -4,7 +4,7 @@ type emailParams = {
 }
 
 export const emailSender = {
-    async sendTestEmail(emailParams: emailParams) {
+    async sendEmail(emailParams: emailParams) {
         const response = await fetch('/api/send', {
             method: 'POST',
             headers: {

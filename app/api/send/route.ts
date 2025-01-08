@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     console.log("body", body)
 
     const { data, error } = await resend.emails.send({
-      from: 'Decomposer <decomposer@jordansucher.com>',
+      from: 'decomposer <decomposer@jordansucher.com>',
       to: body.recipient,
       subject: 'Hello world',
       html: `<a href=${body.songUrl}>Your turn!</a>`,
