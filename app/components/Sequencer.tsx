@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 import { SampleLibrary } from '../utils/Tonejs-instruments'
 import { useMemo } from "react";
 import { Bug, BugIcon, Candy, CarIcon, Dog, GemIcon, Milk, Moon, PinIcon } from "lucide-react";
+import { emailSender } from "../utils/emailSending";
 
 
 type CellState = {
@@ -62,7 +63,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
     const drumRefs = useRef<{ [key: string]: Tone.Sampler }>({});
     const [songIsLoading, setSongIsLoading] = useState(true)
     const [samplersLoading, setSamplersLoading] = useState(true)
-    const [bpm, setBpm] = useState(200)
+    const [bpm, setBpm] = useState(250)
     const [octaves] = useState(2);
     const [bars, setBars] = useState(initBars || 5);
     const [beatsPerBar, setBeatsPerBar] = useState(4);
@@ -154,11 +155,20 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
         }
 
         const songData = await songStorage.save(newSong)
+
+        if (songData && (chords.length/(beatsPerBar*notesPerBeat) < 30) && nextPlayer != null) {
+            //send email
+            await emailSender.sendEmail({
+                recipient: nextPlayer.email,
+                songUrl: `https://exquisite-corpse-composer.vercel.app/?id=${songData.id}`
+            })
+        }
+
         const id = songData.id
         if (searchParams.get('id') == null) {
             redirect(`/?id=${id}`)
         }
-        else if (id && setShowTheSequencer) {
+        else if (id && setShowTheSequencer && !soloMode) {
             setPlaying(false)
             setShowTheSequencer(false)
         }
@@ -443,7 +453,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
         onKeyUp={()=>setKeyDown(false)}
         tabIndex={0}
         >
-            <div className="flex flex-col grow overflow-auto bg-white">
+            <div className="flex flex-col grow w-full overflow-auto bg-white">
                 <div className="flex relative flex-col grow sticky top-0 bg-white z-50 basis-0 max-h-[40px]">
                     <ChordSelector 
                     octaves={octaves}

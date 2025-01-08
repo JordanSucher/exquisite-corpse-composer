@@ -55,7 +55,7 @@ export default function NewGame ({setGiveTheSpiel} : LandingProps) {
         case 0:
             return (
                 <div className="flex flex-col items-center justify-center h-screen">
-                    <h1 className="text-4xl font-bold mb-2 italic">sounds with friends</h1>
+                    <h1 className="text-4xl font-bold mb-2 italic">decomposer</h1>
                     <p className="text-lg text-orange-400 mb-4 italic">an exquisite corpse music composition game</p>
                     <span className="flex gap-3 mt-3">
                         <button onClick={()=> setStep(1)}>

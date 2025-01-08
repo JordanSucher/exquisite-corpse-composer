@@ -15,6 +15,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "reactronica": "^0.8.1-canary.0",
+    "resend": "^4.0.1",
     "tone": "^15.0.4"
   },
   "devDependencies": {
