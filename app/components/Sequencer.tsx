@@ -10,7 +10,6 @@ import * as Tone from 'tone'
 import { songStorage } from "../utils/songStorage";
 import { useSearchParams } from "next/navigation";
 import { MusicTheory } from "../utils/musicTheory";
-import { redirect } from "next/navigation";
 import { SampleLibrary } from '../utils/Tonejs-instruments'
 import { useMemo } from "react";
 import { Bug, BugIcon, Candy, CarIcon, Dog, GemIcon, Milk, Moon, PinIcon } from "lucide-react";
@@ -58,10 +57,12 @@ type SequencerProps = {
 }
 
 export default function Sequencer({currPlayer, setShowTheSequencer, changeBars = false, changeBeatsPerBar = false, changeNotesPerBeat = false, preloadedSong, soloMode = false, startingColIndex = 0, initBars, readOnlyBars = []} : SequencerProps) {
+    // const router = useRouter()
     const synth = useRef<Tone.PolySynth | Tone.PluckSynth | null>(null);
     const instrumentRefs = useRef({});
     const drumRefs = useRef<{ [key: string]: Tone.Sampler }>({});
     const [songIsLoading, setSongIsLoading] = useState(true)
+    const [songIsCached, setSongIsCached] = useState(false)
     const [samplersLoading, setSamplersLoading] = useState(true)
     const [bpm, setBpm] = useState(250)
     const [octaves] = useState(2);
@@ -166,7 +167,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
 
         const id = songData.id
         if (searchParams.get('id') == null) {
-            redirect(`/?id=${id}`)
+            window.location.href = `/?id=${id}`
         }
         else if (id && setShowTheSequencer && !soloMode) {
             setPlaying(false)
@@ -251,6 +252,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
     // }, [readOnlyBars])
 
     const retrieveSong = useCallback(async (songId: string) => {
+        setSongIsCached(false)
         const song = await songStorage.load(songId);
         setSong(song)
     }, [])
@@ -264,6 +266,8 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
     }, [searchParams, retrieveSong, preloadedSong])
 
     useEffect(() => {
+        console.log("playback index changed to", playbackIndex)
+
         const now = Date.now(); // Current timestamp
         const cooldown = 500; // 500ms cooldown period
 
@@ -281,7 +285,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
     }, [playbackIndex]);
 
     useEffect(() => {
-        if (song && song.chords && song.chords.length > 0) {
+        if (song && song.chords && song.chords.length > 0 && !songIsCached) {
             // print song
             console.log("song", song)
             if (song.chords.length / (song.beatsPerBar*song.notesPerBeat) < bars) {
@@ -294,8 +298,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
             setChords(song.chords) 
             setChordCellStates(song.chords.map((x: number) => ({state: x-1, hideLeftBorder: false, hideRightBorder: false})))
             setInstrumentCellStates(song.instruments)
-            // similar deal, couldnt this be the length of the total song, not just the cols to display?
-            // const newNoteCellStates = Array.from({length: octaves*7}, () => Array.from({length: cols}, () => ({state: 0, hideLeftBorder: false, hideRightBorder: false})))
+          
             const newNoteCellStates = Array.from({length: octaves*7}, () => Array.from({length: song.chords.length}, () => ({state: 0, hideLeftBorder: false, hideRightBorder: false})))
 
             song.notes.forEach((row: number[][], rowIndex: number) => {
@@ -313,12 +316,9 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
             setBpm(song.bpm)
 
             setSongIsLoading(false)
+            setSongIsCached(true)
         }
-    }, [song, octaves, cols, bars, beatsPerBar, notesPerBeat])
-
-    // useEffect(() => {
-    //     console.log("changebeatsperbar", changeBeatsPerBar, "changeNotesPerBeat", changeNotesPerBeat)
-    // }, [changeBeatsPerBar, changeNotesPerBeat])
+    }, [song, octaves, cols, bars, beatsPerBar, notesPerBeat, songIsCached])
 
     useEffect(() => {
         if (typeof window !== 'undefined') {

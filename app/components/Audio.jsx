@@ -10,8 +10,30 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
     const colsRef = useRef(cols)
     const currentIndexRef = useRef(0)
 
+    const resetSequencer = () => {
+        // Clear any existing sequences
+        if (sequenceRef.current) {
+            Tone.Transport.clear(sequenceRef.current);
+        }
+        
+        // Reset the transport
+        Tone.Transport.stop();
+        Tone.Transport.position = 0;
+        
+        // Reset our internal counter
+        currentIndexRef.current = 0;
+        setPlaybackIndex(soloMode ? 0 : startingColIndex);
+        
+        // Reset playing state
+        setIsPlaying(false);
+    }
+
     const setupSequence = () => {
-        // console.log("setup sequence triggered, current index", currentIndexRef.current)
+        // Clear any existing sequences
+        resetSequencer();
+
+        
+
         if (sequenceRef.current) {
             // If we have an existing event ID, clear it
             Tone.Transport.clear(sequenceRef.current);
@@ -19,15 +41,12 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
     
         // Schedule a repeating event
         sequenceRef.current = Tone.Transport.scheduleRepeat(time => {
-            // console.log("scheduled repeat triggered, current index", currentIndexRef.current, "startingColIndex", startingColIndex)
+          
 
             let stepIndex = soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex;
 
             const currNotes = notesRef.current[stepIndex] || []
             const currDrums = drumsRef.current[stepIndex] || []
-
-            // if (currNotes.length > 0) console.log("currNotes", currNotes)
-            // if (currDrums.length > 0) console.log("currDrums", currDrums)
 
             // Trigger notes
             currNotes.forEach(note => {
@@ -47,11 +66,8 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
         
             // Update step
             currentIndexRef.current = (currentIndexRef.current + 1) % (colsRef.current)
-            requestAnimationFrame(() => {
-                setPlaybackIndex(soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex)
-            });
-            // setPlaybackIndex(soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex)
-            // 
+            setPlaybackIndex(soloMode ? currentIndexRef.current : currentIndexRef.current + startingColIndex)
+            //
            
 
         }, "8n");
@@ -96,15 +112,6 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
     }, [cols]);
 
     useEffect(() => {
-        setupSequence();
-        return () => {
-            if (sequenceRef.current) {
-                Tone.Transport.clear(sequenceRef.current);
-            }
-        };
-    }, []);
-
-    useEffect(() => {
         if (isPlaying) {
             startPlayback()
         } else {
@@ -118,7 +125,14 @@ export default function Audio({isPlaying, setIsPlaying, notes, drums, setPlaybac
         };
     }, [isPlaying])
     
+    useEffect(() => {
+        resetSequencer();
+        setupSequence();
 
+        return () => {
+            resetSequencer();
+        }
+    }, [startingColIndex])
 
     return (<></>);
 }

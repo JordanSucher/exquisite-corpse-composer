@@ -21,6 +21,7 @@ export default function Home() {
         />
         :
         <Sequencer 
+        key={0}
         soloMode={true}
         changeBars={true}
         changeBeatsPerBar={true}

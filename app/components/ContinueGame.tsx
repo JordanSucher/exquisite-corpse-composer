@@ -119,6 +119,7 @@ export default function ContinueGame() {
     if (showTheSequencer) {
         return (
             <Sequencer 
+                key={song.id}
                 currPlayer={players.find((player: Player) => player.email === waitingOn)}
                 setShowTheSequencer={setShowTheSequencer}
                 startingColIndex={measures == 30 || numPlayers == 1 ? 0 : startingColIndex}
@@ -134,7 +135,7 @@ export default function ContinueGame() {
     }
 
     else if (players.length==0) {
-        return (<div>loading...</div>)
+        return (<div className="flex flex-col items-center justify-center h-screen w-screen">loading...</div>)
     }
 
     else {
