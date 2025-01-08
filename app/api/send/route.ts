@@ -7,7 +7,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    console.log("body", body)
+    // console.log("body", body)
 
     const { data, error } = await resend.emails.send({
       from: 'decomposer <decomposer@jordansucher.com>',

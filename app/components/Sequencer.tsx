@@ -437,7 +437,7 @@ export default function Sequencer({currPlayer, setShowTheSequencer, changeBars =
         setDrums(drumsByCol)
     }, [rhythmCellStates, cols, getRhythm, drumkitCellStates, drumNames, chords])
     
-    if(songIsLoading || samplersLoading) return <></>
+    if(songIsLoading || samplersLoading) return <div className="flex h-screen w-screen flex-col items-center justify-center">loading...</div>
 
     return (
         <div className="flex h-screen w-screen flex-col outline-none grow justify-between touch-auto" 
